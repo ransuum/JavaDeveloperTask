@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package auth;
+
+service AuthService {
+  rpc LoadUserByUsername (LoadUserByUsernameRequest) returns (UserDetails);
+  rpc SignUp (SignUpRequest) returns (UserDetails);
+}
+
+message LoadUserByUsernameRequest {
+  string username = 1;
+}
+
+message SignUpRequest {
+  string login = 1;
+  string password = 2;
+  string role = 3;
+}
+
+message UserDetails {
+  string username = 1;
+  string password = 2;
+  string role = 3;
+}
