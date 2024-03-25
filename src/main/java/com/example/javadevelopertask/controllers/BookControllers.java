@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -24,7 +25,7 @@ public class BookControllers {
         this.bookMapper = bookMapper;
     }
     @PostMapping("/create")
-    @PreAuthorize("@bookAccessService.checkRole(authentication.principal., T(com.example.javadevelopertask.enums.UserRoles).ADMIN)")
+    @PreAuthorize("@bookAccessService.checkRole(authentication.principal.id, T(com.example.javadevelopertask.enums.UserRoles).ADMIN)")
     public ResponseEntity<BookDto> create(@RequestParam String title, @RequestParam String author, @RequestParam String isbn, @RequestParam Integer quantity){
             return new ResponseEntity<>(bookMapper.bookToDto(bookService
                     .create(title, author, isbn, quantity)), HttpStatus.CREATED);
@@ -51,6 +52,17 @@ public class BookControllers {
     @PreAuthorize("@bookAccessService.checkRole(authentication.principal.id, T(com.example.javadevelopertask.enums.UserRoles).ADMIN)")
     public ResponseEntity<List<BookDto>> findAuthorsAndDelete(String author){
         return new ResponseEntity<>(bookService.findAuthorsAndDelete(author).stream()
+                .map(bookMapper::bookToDto).collect(Collectors.toList()), HttpStatus.OK);
+    }
+
+    @GetMapping("/before")
+    public ResponseEntity<List<BookDto>> findByDateBefore(@RequestParam String date) throws ParseException {
+        return new ResponseEntity<>(bookService.findBeforeDate(date).stream().map(bookMapper::bookToDto)
+                .collect(Collectors.toList()), HttpStatus.OK);
+    }
+    @GetMapping("/after")
+    public ResponseEntity<List<BookDto>> findByDateAfter(@RequestParam String date) throws ParseException {
+        return new ResponseEntity<>(bookService.findAfterDate(date).stream()
                 .map(bookMapper::bookToDto).collect(Collectors.toList()), HttpStatus.OK);
     }
 }

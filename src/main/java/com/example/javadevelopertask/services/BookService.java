@@ -5,6 +5,9 @@ import com.example.javadevelopertask.repo.BookRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,6 +24,7 @@ public class BookService {
                     .author(author)
                     .quantity(quantity)
                     .isbn(isbn)
+                    .date(new Date())
                     .build());
         }  else {
             return null;
@@ -48,5 +52,14 @@ public class BookService {
             if (quantity != null) book1.setQuantity(quantity);
         });
         return bookRepo.save(book.orElseThrow());
+    }
+
+    public List<Book> findBeforeDate(String date) throws ParseException {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd:MM:yyyy");
+        return bookRepo.findAllByDateBefore(simpleDateFormat.parse(date));
+    }
+    public List<Book> findAfterDate(String date) throws ParseException {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd:MM:yyyy");
+        return bookRepo.findAllByDateBefore(simpleDateFormat.parse(date));
     }
 }

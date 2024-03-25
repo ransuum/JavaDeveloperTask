@@ -30,8 +30,9 @@ public class AuthConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/book/*").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/book/*").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/book/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/book/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/book/*").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/book/*").hasRole("USER"))
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

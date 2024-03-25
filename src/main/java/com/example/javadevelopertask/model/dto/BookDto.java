@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.UUID;
 @Builder
 @Data
@@ -16,4 +17,5 @@ public class BookDto {
     private String author;
     private String isbn;
     private Integer quantity;
+    private Date date;
 }

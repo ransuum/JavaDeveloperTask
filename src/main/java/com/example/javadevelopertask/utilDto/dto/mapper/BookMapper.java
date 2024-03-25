@@ -9,6 +9,7 @@ public class BookMapper {
     public BookDto bookToDto(Book book){
         return BookDto.builder()
                 .id(book.getId())
+                .date(book.getDate())
                 .author(book.getAuthor())
                 .isbn(book.getIsbn())
                 .quantity(book.getQuantity())
