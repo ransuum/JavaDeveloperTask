@@ -21,7 +21,6 @@ public class AuthService implements UserDetailsService {
         var user = usersRepo.findByEmail(email);
         return user;
     }
-
     public UserDetails signUp(SignUpDto data) throws InvalidJwtException {
         if (usersRepo.findByEmail(data.email()) != null) {
             throw new InvalidJwtException("Username already exists");
