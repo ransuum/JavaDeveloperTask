@@ -8,10 +8,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,7 +35,7 @@ class BookServiceTest {
         String isbn = "1234567890";
         Integer quantity = 10;
 
-        Book mockBook = new Book(UUID.randomUUID(), title, author, isbn, quantity);
+        Book mockBook = new Book(UUID.randomUUID(), title, author, isbn, quantity,  new Date());
         when(bookRepo.save(any(Book.class))).thenReturn(mockBook);
 
         Book createdBook = bookService.create(title, author, isbn, quantity);
@@ -52,7 +50,7 @@ class BookServiceTest {
     @Test
     void findById() {
         UUID id = UUID.randomUUID();
-        Book mockBook = new Book(id, "Test Title", "Test Author", "1234567890", 10);
+        Book mockBook = new Book(id, "Test Title", "Test Author", "1234567890", 10, new Date());
         when(bookRepo.findById(id)).thenReturn(Optional.of(mockBook));
 
         Optional<Book> foundBook = bookService.findById(id);
@@ -75,8 +73,8 @@ class BookServiceTest {
     void findAuthorsAndDelete() {
         String author = "Test Author";
         List<Book> mockBooks = Arrays.asList(
-                new Book(UUID.randomUUID(), "Title1", author, "1234567890", 10),
-                new Book(UUID.randomUUID(), "Title2", author, "0987654321", 5)
+                new Book(UUID.randomUUID(), "Title1", author, "1234567890", 10,  new Date()),
+                new Book(UUID.randomUUID(), "Title2", author, "0987654321", 5,  new Date())
         );
         when(bookRepo.findAll()).thenReturn(mockBooks);
         when(bookRepo.findByAuthor(author)).thenReturn(mockBooks);
@@ -95,7 +93,7 @@ class BookServiceTest {
         String updatedIsbn = "9876543210";
         Integer updatedQuantity = 15;
 
-        Book originalBook = new Book(id, "Original Title", "Original Author", "1234567890", 10);
+        Book originalBook = new Book(id, "Original Title", "Original Author", "1234567890", 10,  new Date());
         when(bookRepo.findById(id)).thenReturn(Optional.of(originalBook));
         when(bookRepo.save(any(Book.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
