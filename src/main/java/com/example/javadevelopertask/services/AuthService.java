@@ -23,7 +23,7 @@ public class AuthService implements UserDetailsService {
     }
     public UserDetails signUp(SignUpDto data) throws InvalidJwtException {
         if (usersRepo.findByEmail(data.email()) != null) {
-            throw new InvalidJwtException("Username already exists");
+            throw new InvalidJwtException("Email already exists");
         }
         String encryptedPassword = new BCryptPasswordEncoder().encode(data.password());
         Users newUser = new Users(data.email(), encryptedPassword, data.role());
