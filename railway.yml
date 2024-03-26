@@ -1,0 +1,4 @@
+name: JavaDeveloperTask
+type: web
+build_command: ./gradlew build
+run_command: java -jar build/libs/*.jar
