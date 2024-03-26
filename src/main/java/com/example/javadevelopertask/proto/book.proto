@@ -1,8 +1,16 @@
 syntax = "proto3";
 
-option java_outer_classname = "AddressBookProtos";
 option java_multiple_files = true;
-option java_package = "com.example.javadevelopertask.proto";
+option java_package = "book";
+
+package book;
+
+service BookService {
+  rpc CreateBook (CreateBookRequest) returns (CreateBookResponse);
+  rpc ReadBook (ReadBookRequest) returns (ReadBookResponse);
+  rpc UpdateBook (UpdateBookRequest) returns (UpdateBookResponse);
+  rpc DeleteBook (DeleteBookRequest) returns (DeleteBookResponse);
+}
 
 message Book {
   string id = 1;
@@ -45,11 +53,4 @@ message DeleteBookRequest {
 message DeleteBookResponse {
   string id = 1;
   string message = 2;
-}
-
-service BookService {
-  rpc CreateBook (CreateBookRequest) returns (CreateBookResponse);
-  rpc ReadBook (ReadBookRequest) returns (ReadBookResponse);
-  rpc UpdateBook (UpdateBookRequest) returns (UpdateBookResponse);
-  rpc DeleteBook (DeleteBookRequest) returns (DeleteBookResponse);
 }

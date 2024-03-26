@@ -2,12 +2,14 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.4'
     id 'io.spring.dependency-management' version '1.1.4'
-    id 'com.google.protobuf' version '0.9.4'
     id 'com.avast.gradle.docker-compose' version '0.14.5'
+    id 'com.google.protobuf' version '0.8.13'
 }
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
+def grpcVersion = '1.62.2'
+def protobufVersion = '4.26.0'
 
 java {
     sourceCompatibility = '17'
@@ -26,15 +28,9 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    // https://mvnrepository.com/artifact/io.grpc/grpc-all
-    implementation group: 'io.grpc', name: 'grpc-all', version: '1.62.2'
-    // https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java
-    // https://mvnrepository.com/artifact/io.grpc/grpc-stub
-    implementation group: 'io.grpc', name: 'grpc-stub', version: '1.62.2'
-
-    implementation group: 'com.google.protobuf', name: 'protobuf-java', version: '3.25.3'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: '3.2.4'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'io.github.lognet:grpc-spring-boot-starter:5.1.5'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'com.auth0:java-jwt:4.4.0'
     compileOnly 'org.projectlombok:lombok'
@@ -53,5 +49,14 @@ tasks.named('test') {
 }
 dockerCompose {
     useComposeFiles = [file('docker-compose.yml')] as List<String>
+}
+protobuf {
+    protoc { artifact = "com.google.protobuf:protoc:${protobufVersion}"}
+    plugins{
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"}
+    }
+    generateProtoTasks {
+        all()*.plugins { grpc {} }
+    }
 }
 
