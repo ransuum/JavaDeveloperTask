@@ -3,11 +3,13 @@ plugins {
     id 'org.springframework.boot' version '3.2.4'
     id 'io.spring.dependency-management' version '1.1.4'
     id 'com.avast.gradle.docker-compose' version '0.14.5'
-    id 'com.google.protobuf' version '0.9.4'
+    id 'com.google.protobuf' version '0.8.18'
 }
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
+def grpcVersion = '1.44.1'
+def protobufVersion = '3.19.2'
 
 java {
     sourceCompatibility = '17'
@@ -30,9 +32,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'com.auth0:java-jwt:4.4.0'
-    runtimeOnly 'io.grpc:grpc-netty-shaded:1.62.2'
-    implementation 'io.grpc:grpc-protobuf:1.62.2'
-    implementation 'io.grpc:grpc-stub:1.62.2'
     compileOnly 'org.apache.tomcat:annotations-api:6.0.53'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -41,8 +40,29 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'org.springframework.security:spring-security-test'
-    testImplementation 'org.testcontainers:junit-jupiter'
-    testImplementation 'org.testcontainers:postgresql'
+    testImplementation group: 'org.testcontainers', name: 'testcontainers', version: '1.19.7'
+    testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.7'
+    testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.19.7'
+    implementation group: 'org.mapstruct', name: 'mapstruct', version: '1.5.5.Final'
+    implementation group: 'org.mapstruct', name: 'mapstruct-processor', version: '1.5.5.Final'
+    implementation 'io.github.lognet:grpc-spring-boot-starter:4.6.0'
+}
+protobuf {
+    protoc { artifact = "com.google.protobuf:protoc:${protobufVersion}" }
+    plugins {
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
+    }
+    generateProtoTasks {
+        all()*.plugins { grpc {} }
+    }
+}
+sourceSets {
+    main {
+        java {
+            srcDirs 'build/generated/source/proto/main/grpc'
+            srcDirs 'build/generated/source/proto/main/java'
+        }
+    }
 }
 
 tasks.named('test') {
@@ -51,20 +71,3 @@ tasks.named('test') {
 dockerCompose {
     useComposeFiles = [file('docker-compose.yml')] as List<String>
 }
-protobuf {
-    protoc {
-        artifact = "com.google.protobuf:protoc:3.25.1"
-    }
-    plugins {
-        grpc {
-            artifact = 'io.grpc:protoc-gen-grpc-java:1.62.2'
-        }
-    }
-    generateProtoTasks {
-        all()*.plugins {
-            grpc {}
-        }
-    }
-}
-
-

@@ -1,9 +1,9 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
-option java_package = "book";
+option java_package = "books";
 
-package book;
+package books;
 
 service BookService {
   rpc CreateBook (CreateBookRequest) returns (CreateBookResponse);
@@ -19,13 +19,16 @@ message Book {
   string isbn = 4;
   int32 quantity = 5;
 }
+
 message CreateBookRequest {
-  Book book = 1;
+  string title = 1;
+  string author = 2;
+  string isbn = 3;
+  int32 quantity = 4;
 }
 
 message CreateBookResponse {
-  Book book = 1;
-  string message = 2;
+  string id = 1;
 }
 
 message ReadBookRequest {
@@ -34,16 +37,18 @@ message ReadBookRequest {
 
 message ReadBookResponse {
   Book book = 1;
-  string message = 2;
 }
 
 message UpdateBookRequest {
-  Book book = 1;
+  string id = 1;
+  string title = 2;
+  string author = 3;
+  string isbn = 4;
+  int32 quantity = 5;
 }
 
 message UpdateBookResponse {
   Book book = 1;
-  string message = 2;
 }
 
 message DeleteBookRequest {
@@ -52,5 +57,4 @@ message DeleteBookRequest {
 
 message DeleteBookResponse {
   string id = 1;
-  string message = 2;
 }
