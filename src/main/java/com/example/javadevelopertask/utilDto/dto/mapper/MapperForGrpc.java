@@ -1,6 +1,7 @@
 package com.example.javadevelopertask.utilDto.dto.mapper;
 
 import books.Book;
+import books.BookProto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -14,12 +15,12 @@ public interface MapperForGrpc {
     @Mapping(target = "author", source = "author")
     @Mapping(target = "isbn", source = "isbn")
     @Mapping(target = "quantity", source = "quantity")
-    Book toBookReal(com.example.javadevelopertask.model.entity.Book book);
+    BookProto toBookReal(com.example.javadevelopertask.model.entity.Book book);
     @Mapping(target = "id", source = "id")
     @Mapping(target = "title", source = "title")
     @Mapping(target = "author", source = "author")
     @Mapping(target = "isbn", source = "isbn")
     @Mapping(target = "quantity", source = "quantity")
-    com.example.javadevelopertask.model.entity.Book realBookToBook(Book book);
+    com.example.javadevelopertask.model.entity.Book realBookToBook(BookProto book);
 
 }
