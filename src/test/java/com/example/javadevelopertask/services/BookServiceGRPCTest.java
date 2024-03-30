@@ -1,23 +1,34 @@
 package com.example.javadevelopertask.services;
 
-import books.CreateBookRequest;
-import books.CreateBookResponse;
-import io.grpc.stub.StreamObserver;
+import books.*;
+import com.example.javadevelopertask.model.entity.Book;
+import com.example.javadevelopertask.repo.BookRepo;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import static org.mockito.Mockito.*;
 
-import java.sql.*;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+import io.grpc.stub.StreamObserver;
 
-import static com.example.javadevelopertask.services.GrpcTestConfiguration.postgresContainer;
-import static org.junit.jupiter.api.Assertions.*;
-@SpringBootTest
+import java.util.Date;
+import java.util.Optional;
+import java.util.UUID;
+
 class BookServiceGRPCTest {
-    @Autowired
+    private BookServiceGrpc.BookServiceBlockingStub bookServiceBlockingStub;
+    private BookRepo bookRepo;
     private BookServiceGRPC bookServiceGRPC;
 
+    @BeforeEach
+    public void setUp() {
+        bookServiceBlockingStub = mock(BookServiceGrpc.BookServiceBlockingStub.class);
+        bookRepo = mock(BookRepo.class);
+        bookServiceGRPC = new BookServiceGRPC(bookRepo);
+    }
+
     @Test
-    public void testCreateBook() {
+    void testCreateBook() {
         CreateBookRequest request = CreateBookRequest.newBuilder()
                 .setAuthor("Author")
                 .setTitle("Title")
@@ -25,72 +36,99 @@ class BookServiceGRPCTest {
                 .setQuantity(10)
                 .build();
 
-        TestStreamObserver<CreateBookResponse> responseObserver = new TestStreamObserver<>();
+        Book savedBook = Book.builder()
+                .id(UUID.randomUUID())
+                .author(request.getAuthor())
+                .title(request.getTitle())
+                .isbn(request.getIsbn())
+                .quantity(request.getQuantity())
+                .date(new Date())
+                .build();
+
+        when(bookRepo.save(any())).thenReturn(savedBook);
+
+        StreamObserver<CreateBookResponse> responseObserver = mock(StreamObserver.class);
 
         bookServiceGRPC.createBook(request, responseObserver);
 
-        CreateBookResponse response = responseObserver.getValue();
-
-        assertNotNull(response);
-        assertNotNull(response.getId());
-    }
-    private static class TestStreamObserver<T> implements StreamObserver<T> {
-        private T value;
-        private Throwable error;
-
-        @Override
-        public void onNext(T value) {
-            this.value = value;
-        }
-
-        @Override
-        public void onError(Throwable t) {
-            this.error = t;
-        }
-
-        @Override
-        public void onCompleted() {
-            // Do nothing
-        }
-
-        public T getValue() {
-            return value;
-        }
-
-        public Throwable getError() {
-            return error;
-        }
+        verify(responseObserver).onNext(any());
+        verify(responseObserver).onCompleted();
     }
 
     @Test
-    public void testCreateBook1() throws SQLException {
-        TestStreamObserver<CreateBookResponse> responseObserver = new TestStreamObserver<>();
-        CreateBookRequest request = CreateBookRequest.newBuilder()
-                .setAuthor("Author")
-                .setTitle("Title")
-                .setIsbn("ISBN")
-                .setQuantity(10)
+    void testReadBook() {
+        UUID id = UUID.randomUUID();
+
+        ReadBookRequest request = ReadBookRequest.newBuilder()
+                .setId(id.toString())
                 .build();
 
-        bookServiceGRPC.createBook(request, responseObserver);
+        Book book = Book.builder()
+                .id(id)
+                .author("Author")
+                .title("Title")
+                .isbn("ISBN")
+                .quantity(10)
+                .date(new Date())
+                .build();
 
-        // Проверка данных в базе данных
-        try (Connection connection = DriverManager.getConnection(
-                postgresContainer.getJdbcUrl(),
-                postgresContainer.getUsername(),
-                postgresContainer.getPassword())) {
+        when(bookRepo.findById(id)).thenReturn(Optional.of(book));
 
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM books WHERE id = ?");
-            preparedStatement.setString(1, responseObserver.getValue().getId());
-            ResultSet resultSet = preparedStatement.executeQuery();
+        StreamObserver<ReadBookResponse> responseObserver = mock(StreamObserver.class);
 
-            assertTrue(resultSet.next());
-            assertEquals("Author", resultSet.getString("author"));
-            assertEquals("Title", resultSet.getString("title"));
-            assertEquals("ISBN", resultSet.getString("isbn"));
-            assertEquals(10, resultSet.getInt("quantity"));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        bookServiceGRPC.readBook(request, responseObserver);
+
+        verify(responseObserver).onNext(any());
+        verify(responseObserver).onCompleted();
+    }
+
+    @Test
+    void testDeleteBook() {
+        UUID id = UUID.randomUUID();
+
+        DeleteBookRequest request = DeleteBookRequest.newBuilder()
+                .setId(id.toString())
+                .build();
+
+        when(bookRepo.findById(id)).thenReturn(Optional.of(new Book()));
+
+        StreamObserver<DeleteBookResponse> responseObserver = mock(StreamObserver.class);
+
+        bookServiceGRPC.deleteBook(request, responseObserver);
+
+        verify(responseObserver).onNext(any());
+        verify(responseObserver).onCompleted();
+    }
+
+    @Test
+    void testUpdateBook() {
+        UUID id = UUID.randomUUID();
+
+        UpdateBookRequest request = UpdateBookRequest.newBuilder()
+                .setId(id.toString())
+                .setAuthor("Updated Author")
+                .setTitle("Updated Title")
+                .setIsbn("Updated ISBN")
+                .setQuantity(20)
+                .build();
+
+        Book existingBook = Book.builder()
+                .id(id)
+                .author("Author")
+                .title("Title")
+                .isbn("ISBN")
+                .quantity(10)
+                .date(new Date())
+                .build();
+
+        when(bookRepo.findById(id)).thenReturn(Optional.of(existingBook));
+        when(bookRepo.save(any())).thenReturn(existingBook);
+
+        StreamObserver<UpdateBookResponse> responseObserver = mock(StreamObserver.class);
+
+        bookServiceGRPC.updateBook(request, responseObserver);
+
+        verify(responseObserver).onNext(any());
+        verify(responseObserver).onCompleted();
     }
 }
