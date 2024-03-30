@@ -40,7 +40,7 @@ message ReadBookRequest {
 }
 
 message ReadBookResponse {
-  BookProto book = 1;
+  BookProto bookProto = 1;
 }
 
 message UpdateBookRequest {
@@ -52,7 +52,7 @@ message UpdateBookRequest {
 }
 
 message UpdateBookResponse {
-  BookProto book = 1;
+  BookProto bookProto = 1;
 }
 
 message DeleteBookRequest {

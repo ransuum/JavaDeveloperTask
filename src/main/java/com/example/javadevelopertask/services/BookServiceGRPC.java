@@ -1,17 +1,13 @@
 package com.example.javadevelopertask.services;
 
 import books.*;
-import com.example.javadevelopertask.JavaDeveloperTaskApplication;
 import com.example.javadevelopertask.model.entity.Book;
 import com.example.javadevelopertask.repo.BookRepo;
-import com.example.javadevelopertask.utilDto.dto.mapper.MapperForGrpc;
+import com.example.javadevelopertask.utilDto.dto.mapper.BookMapper;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import org.lognet.springboot.grpc.GRpcService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Date;
 import java.util.Optional;
@@ -19,57 +15,44 @@ import java.util.UUID;
 
 @GRpcService
 public class BookServiceGRPC extends BookServiceGrpc.BookServiceImplBase {
-    @Autowired
-    private BookRepo bookRepo;
-    private static final Logger logger = LoggerFactory.getLogger(BookServiceGRPC.class);
-
+    BookRepo bookRepo;
+    public BookServiceGRPC(BookRepo bookRepo) {
+        this.bookRepo = bookRepo;
+    }
     @Override
     public void createBook(CreateBookRequest createBookRequest, StreamObserver<CreateBookResponse> createBookResponseStreamObserver){
-        BookProto book = BookProto.newBuilder()
-                .setId(String.valueOf(UUID.randomUUID()))
-                .setTitle(createBookRequest.getTitle())
-                .setQuantity(createBookRequest.getQuantity())
-                .setAuthor(createBookRequest.getAuthor())
-                .setIsbn(createBookRequest.getIsbn())
+        Book book = Book.builder()
+                .author(createBookRequest.getAuthor())
+                .title(createBookRequest.getTitle())
+                .isbn(createBookRequest.getIsbn())
+                .date(new Date())
+                .quantity(createBookRequest.getQuantity())
                 .build();
-        logger.info(createBookRequest.getIsbn());
+        Book save = bookRepo.save(book);
         CreateBookResponse createBookResponse = CreateBookResponse.newBuilder()
-                .setId(book.getId())
-                .setQuantity(book.getQuantity())
-                .setIsbn(book.getIsbn())
-                .setAuthor(book.getAuthor())
-                .setTitle(book.getTitle())
+                .setId(String.valueOf(save.getId()))
+                .setTitle(save.getTitle())
+                .setAuthor(save.getAuthor())
+                .setIsbn(save.getIsbn())
+                .setQuantity(save.getQuantity())
                 .build();
         createBookResponseStreamObserver.onNext(createBookResponse);
         createBookResponseStreamObserver.onCompleted();
-//        Book book = Book.builder()
-//                .author(createBookRequest.getAuthor())
-//                .title(createBookRequest.getTitle())
-//                .isbn(createBookRequest.getIsbn())
-//                .date(new Date())
-//                .quantity(createBookRequest.getQuantity())
-//                .build();
-//        Book save = bookRepo.save(book);
-//        CreateBookResponse createBookResponse = CreateBookResponse.newBuilder()
-//                .setId(String.valueOf(save.getId()))
-//                .build();
-//        createBookResponseStreamObserver.onNext(createBookResponse);
-//        createBookResponseStreamObserver.onCompleted();
     }
 
     @Override
     public void readBook(ReadBookRequest request, StreamObserver<ReadBookResponse> responseObserver) {
-//        Optional<Book> optionalBook = bookRepo.findById(UUID.fromString(request.getId()));
-//        if (optionalBook.isPresent()) {
-//            books.Book book = MapperForGrpc.INST.toBookReal(optionalBook.get());
-//            ReadBookResponse response = ReadBookResponse.newBuilder()
-//                    .setBook(book)
-//                    .build();
-//            responseObserver.onNext(response);
-//        } else {
-//            responseObserver.onError(new StatusRuntimeException(Status.NOT_FOUND));
-//        }
-//        responseObserver.onCompleted();
+        Optional<Book> optionalBook = bookRepo.findById(UUID.fromString(request.getId()));
+        BookMapper bookMapper = new BookMapper();
+        if (optionalBook.isPresent()) {
+            ReadBookResponse response = ReadBookResponse.newBuilder()
+                    .setBookProto(bookMapper.toBookProto(optionalBook.orElseThrow()))
+                    .build();
+            responseObserver.onNext(response);
+        } else {
+            responseObserver.onError(new StatusRuntimeException(Status.NOT_FOUND));
+        }
+        responseObserver.onCompleted();
     }
 
     @Override
@@ -90,15 +73,16 @@ public class BookServiceGRPC extends BookServiceGrpc.BookServiceImplBase {
     @Override
     public void updateBook(UpdateBookRequest request, StreamObserver<UpdateBookResponse> updateBookResponseStreamObserver){
         Optional<Book> byId = bookRepo.findById(UUID.fromString(request.getId()));
+        BookMapper bookMapper = new BookMapper();
         byId.ifPresent(book -> {
             book.setAuthor(request.getAuthor());
             book.setIsbn(request.getIsbn());
             book.setTitle(request.getTitle());
             book.setQuantity(request.getQuantity());
             bookRepo.save(book);
-
+            BookProto bookProto = bookMapper.toBookProto(book);
             UpdateBookResponse updateBookResponse = UpdateBookResponse.newBuilder()
-                    .setBook(MapperForGrpc.INST.toBookReal(book))
+                    .setBookProto(bookProto)
                     .build();
 
             updateBookResponseStreamObserver.onNext(updateBookResponse);

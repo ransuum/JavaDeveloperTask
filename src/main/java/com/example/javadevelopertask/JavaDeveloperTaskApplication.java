@@ -1,7 +1,9 @@
 package com.example.javadevelopertask;
 
-import com.example.javadevelopertask.services.BookService;
+import com.example.javadevelopertask.repo.BookRepo;
+import com.example.javadevelopertask.server.ServerGrpc;
 import com.example.javadevelopertask.services.BookServiceGRPC;
+import com.example.javadevelopertask.utilDto.dto.mapper.BookMapper;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import org.slf4j.Logger;
@@ -13,16 +15,8 @@ import java.io.IOException;
 
 @SpringBootApplication
 public class JavaDeveloperTaskApplication {
-    private static final Logger logger = LoggerFactory.getLogger(JavaDeveloperTaskApplication.class);
-
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) {
         SpringApplication.run(JavaDeveloperTaskApplication.class, args);
-        Server server = ServerBuilder.forPort(50051)
-                .addService(new BookServiceGRPC())
-                .build();
-        server.start();
-        logger.info("gRPC server started on port " + server.getPort());
-        server.awaitTermination();
     }
 
 }
