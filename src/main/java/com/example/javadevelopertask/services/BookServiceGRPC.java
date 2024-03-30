@@ -75,16 +75,14 @@ public class BookServiceGRPC extends BookServiceGrpc.BookServiceImplBase {
         Optional<Book> byId = bookRepo.findById(UUID.fromString(request.getId()));
         BookMapper bookMapper = new BookMapper();
         byId.ifPresent(book -> {
-            book.setAuthor(request.getAuthor());
-            book.setIsbn(request.getIsbn());
-            book.setTitle(request.getTitle());
+            if (!request.getAuthor().isEmpty())book.setAuthor(request.getAuthor());
+            if (!request.getIsbn().isEmpty())book.setIsbn(request.getIsbn());
+            if (!request.getTitle().isEmpty())book.setTitle(request.getTitle());
             book.setQuantity(request.getQuantity());
             bookRepo.save(book);
-            BookProto bookProto = bookMapper.toBookProto(book);
             UpdateBookResponse updateBookResponse = UpdateBookResponse.newBuilder()
-                    .setBookProto(bookProto)
+                    .setBookProto(bookMapper.toBookProto(book))
                     .build();
-
             updateBookResponseStreamObserver.onNext(updateBookResponse);
             updateBookResponseStreamObserver.onCompleted();
         });
